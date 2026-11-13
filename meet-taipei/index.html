@@ -293,6 +293,35 @@
             transform: none;
         }
 
+        .btn-submit.is-submitting {
+            opacity: 1;
+            cursor: wait;
+            box-shadow: none;
+        }
+
+        .btn-submit.is-submitting::before {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            vertical-align: -3px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .btn-submit.is-submitting::before,
+            .spinner { animation: none; }
+        }
+
+        .btn-back:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .btn-back {
             background: #f0f0f0;
             color: #333;
@@ -563,9 +592,9 @@
                 <button type="button" class="btn-submit" id="nextBtn">下一步 →</button>
             </div>
 
-            <div id="loading" class="loading">
-                <div class="spinner"></div>
-                <p style="margin-top: 10px; color: #666;">正在提交中...</p>
+            <div id="loading" class="loading" role="status" aria-live="polite">
+                <div class="spinner" aria-hidden="true"></div>
+                <p style="margin-top: 10px; color: #666;">資料傳送中，請稍候，無需重複點擊…</p>
             </div>
         </form>
     </div>
@@ -575,6 +604,7 @@
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDw5XSxxDlAqHUf5FZh82qJDwXZrz6k26GsFWSbsX__ZVmo26af6SlprB_XWsfr-Z1VA/exec';
 
         let currentStep = 1;
+        let isSubmitting = false;
         const form = document.getElementById('cacaflyForm');
         const nextBtn = document.getElementById('nextBtn');
         const backBtn = document.getElementById('backBtn');
@@ -703,8 +733,19 @@
             return '';
         }
 
+        function setSubmitting(pending) {
+            isSubmitting = pending;
+            nextBtn.disabled = pending;
+            backBtn.disabled = pending;
+            nextBtn.classList.toggle('is-submitting', pending);
+            nextBtn.setAttribute('aria-busy', String(pending));
+            nextBtn.textContent = pending ? '提交中…' : '提交完成';
+            loading.style.display = pending ? 'block' : 'none';
+        }
+
         nextBtn.addEventListener('click', async (e) => {
             e.preventDefault();
+            if (isSubmitting) return;
 
             const validationError = validateStep(currentStep);
             if (validationError) {
@@ -730,8 +771,7 @@
                     privacy: formData.get('privacy') ? 'on' : ''
                 };
 
-                nextBtn.disabled = true;
-                loading.style.display = 'block';
+                setSubmitting(true);
 
                 try {
                     const response = await fetch(APPS_SCRIPT_URL, {
@@ -745,19 +785,18 @@
                         showSuccessPage(result.name);
                     } else {
                         alert('提交失敗: ' + result.message);
-                        nextBtn.disabled = false;
-                        loading.style.display = 'none';
+                        setSubmitting(false);
                     }
                 } catch (error) {
                     alert('提交失敗：' + error);
-                    nextBtn.disabled = false;
-                    loading.style.display = 'none';
+                    setSubmitting(false);
                 }
             }
         });
 
         backBtn.addEventListener('click', (e) => {
             e.preventDefault();
+            if (isSubmitting) return;
             if (currentStep > 1) {
                 showStep(currentStep - 1);
             }
