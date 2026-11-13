@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>cacaFly Meet Taipei 2026</title>
+    <title>cacaFly Build With Gemini 2026</title>
     <style>
         :root {
             color-scheme: dark;
@@ -574,6 +574,11 @@
                         <div class="section-title">您的聯繫方式</div>
 
                         <div class="form-group">
+                            <label for="company" class="required">你的公司名稱</label>
+                            <input type="text" id="company" name="company" placeholder="科技有限公司" autocomplete="organization">
+                        </div>
+
+                        <div class="form-group">
                             <label for="email" class="required">公司電子郵件</label>
                             <input type="email" id="email" name="email" placeholder="you@company.com">
                         </div>
@@ -607,7 +612,7 @@
 
     <script>
         // 貼上 Apps Script「網頁應用程式」完整部署網址，取代下方佔位符。
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4gK1oMvARMcBlhRh6wtAgnrxgP6_9QQaNWEItaLb8nLDEj87KjF-eXHIgZ7-3eIQo/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5bBZ-AHZzAbAfQBH3vAzmKe2U55MmGUtWEbJ6TCg3aIq2UmTloxPydYe5pSR85TQI/exec';
 
         let currentStep = 1;
         let isSubmitting = false;
@@ -623,11 +628,13 @@
             const isYes = document.getElementById('contact_yes').checked;
             if (isYes) {
                 contactSection.classList.remove('hidden');
+                document.getElementById('company').required = true;
                 document.getElementById('email').required = true;
                 document.getElementById('phone').required = true;
                 document.getElementById('privacy').required = true;
             } else {
                 contactSection.classList.add('hidden');
+                document.getElementById('company').required = false;
                 document.getElementById('email').required = false;
                 document.getElementById('phone').required = false;
                 document.getElementById('privacy').required = false;
@@ -724,6 +731,7 @@
                 const needContact = document.querySelector('input[name="needContact"]:checked');
                 if (!needContact) return '請選擇是否需要 cacaFly 進一步聯繫';
                 if (needContact.value === '是，請聯繫我') {
+                    if (!document.getElementById('company').value.trim()) return '請填寫公司名稱';
                     const email = document.getElementById('email').value;
                     if (!email.trim()) return '請填寫公司電子郵件';
                     if (!validateEmail(email)) return '請輸入有效的公司電子郵件地址（例如：you@company.com）';
@@ -772,6 +780,7 @@
                     topics: Array.from(formData.getAll('topics')).join(', '),
                     challenges: formData.get('challenges') || '',
                     needContact: formData.get('needContact') || '',
+                    company: formData.get('company') || '',
                     email: formData.get('email') || '',
                     phone: formData.get('phone') || '',
                     privacy: formData.get('privacy') ? 'on' : ''
