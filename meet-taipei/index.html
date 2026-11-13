@@ -294,10 +294,28 @@
 
         .conditional-section {
             background: #fff8f0;
-            padding: 28px;
+            padding: 0;
             border-radius: 8px;
             margin-top: 28px;
             border-left: 4px solid #FFA500;
+            padding-left: 0;
+        }
+
+        .conditional-section .section-title {
+            padding: 28px 28px 0 28px;
+            margin-bottom: 0;
+        }
+
+        .conditional-section .form-group {
+            padding: 0 28px;
+        }
+
+        .conditional-section .form-group:first-of-type {
+            padding-top: 16px;
+        }
+
+        .conditional-section .form-group:last-of-type {
+            padding-bottom: 28px;
         }
 
         .form-note {
@@ -576,6 +594,18 @@
             radio.addEventListener('change', toggleContactSection);
         });
 
+        // 修復 checkbox 點擊反饋延遲問題
+        document.querySelectorAll('.checkbox-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'INPUT') {
+                    const checkbox = option.querySelector('input[type="checkbox"]');
+                    checkbox.checked = !checkbox.checked;
+                    // 強制重新渲染樣式
+                    checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+        });
+
         function showStep(step) {
             currentStep = step;
             document.querySelectorAll('.form-step').forEach(el => el.classList.add('step-hidden'));
@@ -609,6 +639,11 @@
             window.scrollTo(0, 0);
         }
 
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
         function validateStep(step) {
             if (step === 1) {
                 return document.getElementById('name').value &&
@@ -621,8 +656,13 @@
                 const needContact = document.querySelector('input[name="needContact"]:checked');
                 if (!needContact) return false;
                 if (needContact.value === '是，請聯繫我') {
+                    const email = document.getElementById('email').value;
+                    if (!validateEmail(email)) {
+                        alert('請輸入有效的公司電子郵件地址（例如：you@company.com）');
+                        return false;
+                    }
                     return document.getElementById('company').value &&
-                           document.getElementById('email').value &&
+                           email &&
                            document.getElementById('phone').value &&
                            document.getElementById('privacy').checked;
                 }
