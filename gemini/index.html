@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>cacaFly Meet Taipei 2026</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --accent: #F6891F;
+            --page-background: #181614;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: #181614;
+            color: #F5F1EB;
+            min-height: 100vh;
+            padding: 16px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: #181614;
+            border-radius: 0;
+            box-shadow: none;
+            max-width: 100%;
+            width: 100%;
+            padding: 44px 24px;
+        }
+
+        @media (min-width: 640px) {
+            .container {
+                border-radius: 8px;
+                box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+                max-width: 640px;
+                padding: 52px 48px;
+            }
+        }
+
+        .progress-bar {
+            background: #48423C;
+            height: 5px;
+            margin-bottom: 32px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #F6891F;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 44px;
+            border-bottom: 3px solid #F6891F;
+            padding-bottom: 28px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            font-weight: 800;
+            color: #F6891F;
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+            line-height: 1.2;
+        }
+
+        .header p {
+            color: #BFB7AE;
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.7;
+        }
+
+        .form-group {
+            margin-bottom: 28px;
+        }
+
+        .form-group.hidden {
+            display: none;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            color: #F5F1EB;
+            margin-bottom: 12px;
+            font-size: 17px;
+            line-height: 1.5;
+            letter-spacing: -0.2px;
+        }
+
+        .required::after {
+            content: '*';
+            color: #F6891F;
+            margin-left: 4px;
+            font-weight: 700;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 17px 16px;
+            min-height: 58px;
+            line-height: 1.5;
+            border: 1px solid #625A52;
+            border-radius: 6px;
+            font-size: 17px;
+            font-family: inherit;
+            transition: all 0.2s;
+            background: #211E1B;
+            color: #F5F1EB;
+            font-weight: 400;
+        }
+
+        input::placeholder,
+        textarea::placeholder { color: #A99F94; opacity: 1; }
+
+        select option { background: #211E1B; color: #F5F1EB; }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #F6891F;
+            background: #211E1B;
+            box-shadow: 0 0 0 3px rgba(246, 137, 31, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.5;
+        }
+
+        .radio-group,
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .radio-option,
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 18px 16px;
+            border: 2px solid #625A52;
+            border-radius: 8px;
+            background: #211E1B;
+            transition: all 0.2s;
+            min-height: 52px;
+            user-select: none;
+        }
+
+        .radio-option:hover {
+            border-color: #F6891F;
+            background: #30251B;
+        }
+
+        .radio-option:active {
+            border-color: #F6891F;
+            background: #30251B;
+        }
+
+        .radio-option input[type="radio"] {
+            display: none !important;
+        }
+
+        /* 保留原生表單控制項，讓手機點擊與鍵盤操作由瀏覽器處理。 */
+        .checkbox-option input[type="checkbox"]:not(#privacy) {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .checkbox-option:has(input:focus-visible) {
+            outline: 2px solid #F6891F;
+            outline-offset: 2px;
+        }
+
+        /* 隱私協議checkbox特殊處理 - 保留可見 */
+        #privacy {
+            display: block !important;
+            width: 20px !important;
+            height: 20px !important;
+            min-width: 20px !important;
+            min-height: 20px !important;
+            margin-right: 12px !important;
+            cursor: pointer !important;
+            accent-color: #F6891F;
+        }
+
+        /* 選中時的視覺反饋 */
+        .radio-option input[type="radio"]:checked,
+        .checkbox-option input[type="checkbox"]:checked {
+            accent-color: #F6891F;
+        }
+
+        .radio-option input[type="radio"]:checked + label,
+        .checkbox-option input[type="checkbox"]:checked + span {
+            color: #F6891F;
+            font-weight: 600;
+        }
+
+        .radio-option {
+            position: relative;
+        }
+
+        .checkbox-option {
+            position: relative;
+            margin: 0;
+        }
+
+        .radio-option label,
+        .checkbox-option span {
+            margin: 0;
+            cursor: pointer !important;
+            font-weight: 500;
+            color: #F5F1EB;
+            font-size: 17px;
+            line-height: 1.6;
+            letter-spacing: -0.2px;
+            flex: 1;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: #48423C;
+            margin: 40px 0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #F6891F;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+            line-height: 1.3;
+        }
+
+        .section-desc {
+            font-size: 16px;
+            color: #BFB7AE;
+            margin-bottom: 24px;
+            line-height: 1.7;
+            font-weight: 400;
+        }
+
+        .form-footer {
+            margin-top: 36px;
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: -0.3px;
+        }
+
+        .btn-submit {
+            background: #F6891F;
+            color: #181614;
+        }
+
+        .btn-submit:hover {
+            background: #FF9C42;
+            box-shadow: 0 4px 12px rgba(246, 137, 31, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-submit.is-submitting {
+            opacity: 1;
+            cursor: wait;
+            box-shadow: none;
+        }
+
+        .btn-submit.is-submitting::before {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            vertical-align: -3px;
+            border: 2px solid rgba(24, 22, 20, 0.3);
+            border-top-color: #181614;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .btn-submit.is-submitting::before,
+            .spinner { animation: none; }
+        }
+
+        .btn-back:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-back {
+            background: #302C28;
+            color: #F5F1EB;
+        }
+
+        .btn-back:hover {
+            background: #48423C;
+        }
+
+        /* 聯繫資訊與頁面共用底色，僅輸入欄位保留深灰底。 */
+        .conditional-section {
+            background: transparent;
+            padding: 0;
+            margin-top: 32px;
+            border: 0;
+            border-top: 1px solid #48423C;
+        }
+
+        .conditional-section .section-title {
+            padding: 24px 0 0;
+            margin-bottom: 24px;
+            color: #F5F1EB;
+        }
+
+        .conditional-section .form-group {
+            padding: 0;
+        }
+
+        .conditional-section .form-group:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .conditional-section .checkbox-option {
+            padding: 16px 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            align-items: flex-start;
+        }
+
+        #privacy { margin-top: 3px; }
+
+        .form-note {
+            background: #30251B;
+            border-left: 3px solid #F6891F;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 15px;
+            color: #BFB7AE;
+            margin-top: 16px;
+            line-height: 1.5;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 24px;
+        }
+
+        .spinner {
+            border: 3px solid #48423C;
+            border-top: 3px solid #F6891F;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .step-hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 33%;"></div>
+        </div>
+
+        <div class="header">
+            <h1>cacaFly</h1>
+            <p id="stepTitle">第 1 / 3 步 - 基本資訊</p>
+        </div>
+
+        <form id="cacaflyForm">
+            <!-- 第 1 步：基本資訊 -->
+            <div id="step1" class="form-step">
+                <div class="form-group">
+                    <label for="name" class="required">該怎麼稱呼你？</label>
+                    <input type="text" id="name" name="name" placeholder="大河馬" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="role" class="required">在團隊中擔任的角色／職稱</label>
+                    <select id="role" name="role" required>
+                        <option value="">請選擇...</option>
+                        <option value="決策者（主管/老闆）">決策者（主管／老闆）</option>
+                        <option value="資訊 / AI">資訊／AI</option>
+                        <option value="業務／行銷/營運">業務／行銷／營運</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">今日服務的 cacaFly 人員是？</label>
+                    <div class="radio-group">  
+                        <div class="radio-option">
+                            <input type="radio" id="staff3" name="staff" value="Vera">
+                            <label for="staff3">Vera</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="staff4" name="staff" value="Yiting">
+                            <label for="staff4">Yiting</label>
+                        </div>                        
+                        <div class="radio-option">
+                            <input type="radio" id="staff7" name="staff" value="Justin">
+                            <label for="staff7">Justin</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="staff9" name="staff" value="Shu">
+                            <label for="staff9">Shu</label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 第 2 步：AI 工作探索 -->
+            <div id="step2" class="form-step step-hidden">
+                <div class="section-title">AI 工作探索</div>
+                <div class="section-desc">瞭解您和團隊在 AI 應用上的進展</div>
+
+                <div class="form-group">
+                    <label class="required">在工作中使用 AI 的狀況是？</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="aiUsage1" name="aiUsage" value="1) 有聽說很厲害，但工作上還沒真正開始用">
+                            <label for="aiUsage1">有聽說很厲害，但工作上還沒真正開始用</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="aiUsage2" name="aiUsage" value="2) 常用 AI 助理寫文案、改信件或查資料">
+                            <label for="aiUsage2">常用 AI 助理寫文案、改信件或查資料</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="aiUsage3" name="aiUsage" value="3) 有小規模的試點項目">
+                            <label for="aiUsage3">有小規模的試點項目</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="aiUsage4" name="aiUsage" value="4) 已經把 AI 融入數據分析、廣告投放或工作流程自動化">
+                            <label for="aiUsage4">已經把 AI 融入數據分析、廣告投放或工作流程自動化</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="aiUsage5" name="aiUsage" value="5) 已建立成熟的 AI 工作流和流程">
+                            <label for="aiUsage5">已建立成熟的 AI 工作流和流程</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <div class="section-title">感興趣的主題</div>
+                <div class="section-desc">✓ 可選擇多個 - 請勾選所有感興趣的領域</div>
+
+                <div class="form-group">
+                    <label class="required">主題選擇</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-option" for="topic1">
+                                <input type="checkbox" id="topic1" name="topics" value="BigQuery 數據倉儲與分析：把各系統分散的數據串在一起集中分析">
+                                <span>BigQuery 數據倉儲與分析：把各系統分散的數據串在一起集中分析</span>
+                            </label>
+                        <label class="checkbox-option" for="topic2">
+                                <input type="checkbox" id="topic2" name="topics" value="Knowledge Catalog 商業詞彙庫：建立公司統一專有名詞與字典，讓 AI 不再胡言亂語">
+                                <span>Knowledge Catalog 商業詞彙庫：建立公司統一專有名詞與字典，讓 AI 不再胡言亂語</span>
+                            </label>
+                        <label class="checkbox-option" for="topic3">
+                                <input type="checkbox" id="topic3" name="topics" value="知識圖譜：把規章與文件串成邏輯地圖">
+                                <span>知識圖譜：把規章與文件串成邏輯地圖</span>
+                            </label>
+                        <label class="checkbox-option" for="topic4">
+                                <input type="checkbox" id="topic4" name="topics" value="Gemini 企業級 AI 應用：導入高階生成式 AI 處理複雜任務">
+                                <span>Gemini 企業級 AI 應用：導入高階生成式 AI 處理複雜任務</span>
+                            </label>
+                        <label class="checkbox-option" for="topic5">
+                                <input type="checkbox" id="topic5" name="topics" value="Agent Platform：建置能替人跑流程的 AI 專員">
+                                <span>Agent Platform：建置能替人跑流程的 AI 專員</span>
+                            </label>
+                      <label class="checkbox-option" for="topic6">
+                                <input type="checkbox" id="topic6" name="topics" value="Agent 系統串接（MCP / API）：讓 AI 擁有操作外部系統的手腳">
+                                <span>Agent 系統串接（MCP / API）：讓 AI 擁有操作外部系統的手腳</span>
+                            </label>
+                      <label class="checkbox-option" for="topic7">
+                                <input type="checkbox" id="topic7" name="topics" value="Agent Identity：嚴格控管 AI 能看什麼、不能看什麼">
+                                <span>Agent Identity：嚴格控管 AI 能看什麼、不能看什麼</span>
+                            </label>
+                       <label class="checkbox-option" for="topic8">
+                                <input type="checkbox" id="topic8" name="topics" value="Agent Registry 與稽核治理：統一登錄所有 AI 並留下完整調用軌跡">
+                                <span>Agent Registry 與稽核治理：統一登錄所有 AI 並留下完整調用軌跡</span>
+                            </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="challenges">推動或使用 AI 時，目前最大的挑戰是什麼？（選填）</label>
+                    <input type="text" id="challenges" name="challenges" placeholder="選填 - 分享你面臨的主要挑戰...">
+                </div>
+            </div>
+
+            <!-- 第 3 步：聯繫資訊 -->
+            <div id="step3" class="form-step step-hidden">
+                <div class="section-title">聯繫資訊</div>
+                <div class="section-desc">完成填寫，我們會在 3-5 個工作日內回覆</div>
+
+                <div class="form-group">
+                    <label class="required">需要 cacaFly 進一步聯繫嗎？</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="contact_yes" name="needContact" value="是，請聯繫我">
+                            <label for="contact_yes">是的，請聯繫我</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="contact_no" name="needContact" value="先不用">
+                            <label for="contact_no">先不用</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="contactSection" class="form-group hidden">
+                    <div class="conditional-section">
+                        <div class="section-title">您的聯繫方式</div>
+
+                        <div class="form-group">
+                            <label for="email" class="required">公司電子郵件</label>
+                            <input type="email" id="email" name="email" placeholder="you@company.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone" class="required">你的電話號碼</label>
+                            <input type="tel" id="phone" name="phone" placeholder="0912-345-678">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-option" for="privacy">
+                                <input type="checkbox" id="privacy" name="privacy">
+                                <span>我已詳閱並同意上述<a href="https://docs.google.com/document/d/1qQ1f_ybtiRBHmJScb7wVdfpeVrpYykScaTAI0kiMyBY/edit?usp=sharing" target=_blank>個人資料蒐集告知聲明</a></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-footer">
+                <button type="button" class="btn-back" id="backBtn" style="display: none;">← 上一步</button>
+                <button type="button" class="btn-submit" id="nextBtn">下一步 →</button>
+            </div>
+
+            <div id="loading" class="loading" role="status" aria-live="polite">
+                <div class="spinner" aria-hidden="true"></div>
+                <p style="margin-top: 10px; color: #BFB7AE;">資料傳送中，請稍候，無需重複點擊…</p>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // 貼上 Apps Script「網頁應用程式」完整部署網址，取代下方佔位符。
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4gK1oMvARMcBlhRh6wtAgnrxgP6_9QQaNWEItaLb8nLDEj87KjF-eXHIgZ7-3eIQo/exec';
+
+        let currentStep = 1;
+        let isSubmitting = false;
+        const form = document.getElementById('cacaflyForm');
+        const nextBtn = document.getElementById('nextBtn');
+        const backBtn = document.getElementById('backBtn');
+        const contactSection = document.getElementById('contactSection');
+        const progressFill = document.getElementById('progressFill');
+        const stepTitle = document.getElementById('stepTitle');
+        const loading = document.getElementById('loading');
+
+        function toggleContactSection() {
+            const isYes = document.getElementById('contact_yes').checked;
+            if (isYes) {
+                contactSection.classList.remove('hidden');
+                document.getElementById('email').required = true;
+                document.getElementById('phone').required = true;
+                document.getElementById('privacy').required = true;
+            } else {
+                contactSection.classList.add('hidden');
+                document.getElementById('email').required = false;
+                document.getElementById('phone').required = false;
+                document.getElementById('privacy').required = false;
+            }
+        }
+
+        // 初始化所有 radio 和 checkbox 的樣式
+        function updateRadioStyles(groupName) {
+            document.querySelectorAll(`.radio-option input[name="${groupName}"]`).forEach(radio => {
+                const option = radio.closest('.radio-option');
+                if (radio.checked) {
+                    option.style.background = '#30251B';
+                    option.style.borderColor = '#F6891F';
+                } else {
+                    option.style.background = '#211E1B';
+                    option.style.borderColor = '#625A52';
+                }
+            });
+        }
+
+        // 所有 radio 按鈕組監聽
+        ['staff', 'aiUsage', 'needContact'].forEach(name => {
+            document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+                radio.addEventListener('change', () => {
+                    updateRadioStyles(name);
+                    if (name === 'needContact') {
+                        toggleContactSection();
+                    }
+                });
+            });
+        });
+
+        function updateCheckboxStyle(checkbox) {
+            const option = checkbox.closest('.checkbox-option');
+            if (checkbox.id === 'privacy') return;
+            option.style.background = checkbox.checked ? '#30251B' : '#211E1B';
+            option.style.borderColor = checkbox.checked ? '#F6891F' : '#625A52';
+        }
+
+        document.querySelectorAll('.checkbox-option').forEach(option => {
+            const checkbox = option.querySelector('input[type="checkbox"]');
+
+            checkbox.addEventListener('change', () => updateCheckboxStyle(checkbox));
+            updateCheckboxStyle(checkbox);
+        });
+
+        function showStep(step) {
+            currentStep = step;
+            document.querySelectorAll('.form-step').forEach(el => el.classList.add('step-hidden'));
+            document.getElementById('step' + step).classList.remove('step-hidden');
+
+            const progressPercentage = (step / 3) * 100;
+            progressFill.style.width = progressPercentage + '%';
+
+            const titles = [
+                '第 1 / 3 步 - 基本資訊',
+                '第 2 / 3 步 - AI 探索',
+                '第 3 / 3 步 - 最後一步'
+            ];
+            stepTitle.textContent = titles[step - 1];
+
+            if (step === 1) {
+                backBtn.style.display = 'none';
+                nextBtn.textContent = '下一步 →';
+            } else if (step === 3) {
+                backBtn.style.display = 'block';
+                nextBtn.textContent = '提交完成';
+            } else {
+                backBtn.style.display = 'block';
+                nextBtn.textContent = '下一步 →';
+            }
+
+            if (step === 3) {
+                toggleContactSection();
+            }
+
+            window.scrollTo(0, 0);
+        }
+
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function validateStep(step) {
+            if (step === 1) {
+                if (!document.getElementById('name').value.trim()) return '請填寫您的稱呼';
+                if (!document.getElementById('role').value) return '請選擇您的角色／職稱';
+                if (!document.querySelector('input[name="staff"]:checked')) return '請選擇今日服務的 cacaFly 人員';
+            } else if (step === 2) {
+                if (!document.querySelector('input[name="aiUsage"]:checked')) return '請選擇在工作中使用 AI 的狀況';
+                if (!document.querySelector('input[name="topics"]:checked')) return '請至少選擇一個感興趣的主題';
+            } else if (step === 3) {
+                const needContact = document.querySelector('input[name="needContact"]:checked');
+                if (!needContact) return '請選擇是否需要 cacaFly 進一步聯繫';
+                if (needContact.value === '是，請聯繫我') {
+                    const email = document.getElementById('email').value;
+                    if (!email.trim()) return '請填寫公司電子郵件';
+                    if (!validateEmail(email)) return '請輸入有效的公司電子郵件地址（例如：you@company.com）';
+                    if (!document.getElementById('phone').value.trim()) return '請填寫電話號碼';
+                    if (!document.getElementById('privacy').checked) return '請勾選同意隱私政策';
+                }
+            } else {
+                return '請返回正確的表單步驟';
+            }
+            return '';
+        }
+
+        function setSubmitting(pending) {
+            isSubmitting = pending;
+            nextBtn.disabled = pending;
+            backBtn.disabled = pending;
+            nextBtn.classList.toggle('is-submitting', pending);
+            nextBtn.setAttribute('aria-busy', String(pending));
+            nextBtn.textContent = pending ? '提交中…' : '提交完成';
+            loading.style.display = pending ? 'block' : 'none';
+        }
+
+        nextBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (isSubmitting) return;
+
+            const validationError = validateStep(currentStep);
+            if (validationError) {
+                alert(validationError);
+                return;
+            }
+
+            if (currentStep < 3) {
+                showStep(currentStep + 1);
+            } else {
+                if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL') {
+                    alert('尚未設定表單接收網址，請聯繫現場人員。');
+                    return;
+                }
+                const formData = new FormData(form);
+                const submitData = {
+                    name: formData.get('name') || '',
+                    role: formData.get('role') || '',
+                    staff: formData.get('staff') || '',
+                    aiUsage: formData.get('aiUsage') || '',
+                    topics: Array.from(formData.getAll('topics')).join(', '),
+                    challenges: formData.get('challenges') || '',
+                    needContact: formData.get('needContact') || '',
+                    email: formData.get('email') || '',
+                    phone: formData.get('phone') || '',
+                    privacy: formData.get('privacy') ? 'on' : ''
+                };
+
+                setSubmitting(true);
+
+                try {
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(submitData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showSuccessPage(result.name);
+                    } else {
+                        alert('提交失敗: ' + result.message);
+                        setSubmitting(false);
+                    }
+                } catch (error) {
+                    alert('提交失敗：' + error);
+                    setSubmitting(false);
+                }
+            }
+        });
+
+        backBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (isSubmitting) return;
+            if (currentStep > 1) {
+                showStep(currentStep - 1);
+            }
+        });
+
+        function showSuccessPage(name) {
+            var displayName = String(name || '親愛的訪客').replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[character]));
+            document.querySelector('.container').innerHTML =
+                '<div style="text-align: center; padding: 32px 20px;">' +
+                '<div style="width: 72px; height: 72px; margin: 0 auto 24px; background: #F6891F; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #181614; font-weight: bold;">✓</div>' +
+                '<h1 style="color: #F6891F; font-size: 36px; margin-bottom: 16px; font-weight: 800; line-height: 1.3;">提交成功！</h1>' +
+                '<p style="color: #F5F1EB; font-size: 16px; margin-bottom: 28px; font-weight: 600; line-height: 1.6;">' + displayName + '，感謝你的參與</p>' +
+                '<div style="color: #BFB7AE; margin-bottom: 28px; font-size: 16px; line-height: 1.8;">' +
+                '<p style="margin: 0 0 12px 0;">我們已收到你的信息，我們的團隊會盡快審查。</p>' +
+                '<p style="margin: 0;">如果你選擇了聯繫，我們會在 3-5 個工作日內與你聯繫。</p>' +
+                '</div>' +
+                '<div style="background: #30251B; padding: 20px; border-radius: 8px; border-left: 4px solid #F6891F; text-align: left;">' +
+                '<h3 style="color: #F6891F; font-size: 17px; margin-bottom: 12px; font-weight: 800; margin-top: 0; text-align: center;">接下來會發生什麼？</h3>' +
+                '<p style="color: #BFB7AE; font-size: 15px; margin: 0; line-height: 1.8;">' +
+                '• 請出示畫面領取小禮物<br>' +
+                '• 如有需要，我們會發送郵件或電話聯繫<br>' +
+                '• 準備好解答你關於 AI 和雲端服務的問題' +
+                '</p>' +
+                '</div>' +
+                '</div>';
+        }
+
+        // 初始化所有樣式
+        ['staff', 'aiUsage', 'needContact'].forEach(name => {
+            updateRadioStyles(name);
+        });
+
+        showStep(1);
+    </script>
+</body>
+</html>
