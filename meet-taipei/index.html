@@ -199,12 +199,6 @@
             font-weight: 600;
         }
 
-        .radio-option:has(input[type="radio"]:checked),
-        .checkbox-option:has(input[type="checkbox"]:checked) {
-            background: #fff8f0;
-            border-color: #FFA500;
-        }
-
         .radio-option {
             position: relative;
         }
@@ -590,18 +584,50 @@
             }
         }
 
-        document.querySelectorAll('input[name="needContact"]').forEach(radio => {
-            radio.addEventListener('change', toggleContactSection);
+        // 初始化所有 radio 和 checkbox 的樣式
+        function updateRadioStyles(groupName) {
+            document.querySelectorAll(`.radio-option input[name="${groupName}"]`).forEach(radio => {
+                const option = radio.closest('.radio-option');
+                if (radio.checked) {
+                    option.style.background = '#fff8f0';
+                    option.style.borderColor = '#FFA500';
+                } else {
+                    option.style.background = 'white';
+                    option.style.borderColor = '#ddd';
+                }
+            });
+        }
+
+        // 所有 radio 按鈕組監聽
+        ['staff', 'aiUsage', 'needContact'].forEach(name => {
+            document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+                radio.addEventListener('change', () => {
+                    updateRadioStyles(name);
+                    if (name === 'needContact') {
+                        toggleContactSection();
+                    }
+                });
+            });
         });
 
-        // 修復 checkbox 點擊反饋延遲問題
+        // 修復 checkbox 點擊反饋延遲問題 - 立即更新樣式
         document.querySelectorAll('.checkbox-option').forEach(option => {
+            const checkbox = option.querySelector('input[type="checkbox"]');
+
             option.addEventListener('click', (e) => {
                 if (e.target.tagName !== 'INPUT') {
-                    const checkbox = option.querySelector('input[type="checkbox"]');
                     checkbox.checked = !checkbox.checked;
-                    // 強制重新渲染樣式
-                    checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+
+            // 監聽 checkbox 狀態變化，立即更新外框樣式
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    option.style.background = '#fff8f0';
+                    option.style.borderColor = '#FFA500';
+                } else {
+                    option.style.background = 'white';
+                    option.style.borderColor = '#ddd';
                 }
             });
         });
@@ -751,6 +777,19 @@
                 '</div>' +
                 '</div>';
         }
+
+        // 初始化所有樣式
+        ['staff', 'aiUsage', 'needContact'].forEach(name => {
+            updateRadioStyles(name);
+        });
+
+        document.querySelectorAll('.checkbox-option input[type="checkbox"]').forEach(checkbox => {
+            const option = checkbox.closest('.checkbox-option');
+            if (checkbox.checked) {
+                option.style.background = '#fff8f0';
+                option.style.borderColor = '#FFA500';
+            }
+        });
 
         showStep(1);
     </script>
