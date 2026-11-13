@@ -169,6 +169,43 @@
             display: none !important;
         }
 
+        /* 選中時的視覺反饋 */
+        .radio-option input[type="radio"]:checked + label,
+        .checkbox-option input[type="checkbox"]:checked + label {
+            color: #FFA500;
+            font-weight: 600;
+        }
+
+        .radio-option:has(input[type="radio"]:checked),
+        .checkbox-option:has(input[type="checkbox"]:checked) {
+            background: #fff8f0;
+            border-color: #FFA500;
+        }
+
+        .radio-option:has(input[type="radio"]:checked)::before,
+        .checkbox-option:has(input[type="checkbox"]:checked)::before {
+            content: '';
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: #FFA500;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .radio-option {
+            position: relative;
+        }
+
+        .checkbox-option {
+            position: relative;
+        }
+
         .radio-option label,
         .checkbox-option label {
             margin: 0;
