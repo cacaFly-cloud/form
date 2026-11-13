@@ -610,26 +610,23 @@
             });
         });
 
-        // 修復 checkbox 點擊反饋延遲問題 - 立即更新樣式
+        function updateCheckboxStyle(checkbox) {
+            const option = checkbox.closest('.checkbox-option');
+            option.style.background = checkbox.checked ? '#fff8f0' : 'white';
+            option.style.borderColor = checkbox.checked ? '#FFA500' : '#ddd';
+        }
+
         document.querySelectorAll('.checkbox-option').forEach(option => {
             const checkbox = option.querySelector('input[type="checkbox"]');
 
-            option.addEventListener('click', (e) => {
-                if (e.target.tagName !== 'INPUT') {
-                    checkbox.checked = !checkbox.checked;
-                }
+            option.addEventListener('click', (event) => {
+                // label 與 input 保留原生行為；只有容器空白處轉交點擊。
+                if (event.target.closest('input, label')) return;
+                checkbox.click();
             });
 
-            // 監聽 checkbox 狀態變化，立即更新外框樣式
-            checkbox.addEventListener('change', () => {
-                if (checkbox.checked) {
-                    option.style.background = '#fff8f0';
-                    option.style.borderColor = '#FFA500';
-                } else {
-                    option.style.background = 'white';
-                    option.style.borderColor = '#ddd';
-                }
-            });
+            checkbox.addEventListener('change', () => updateCheckboxStyle(checkbox));
+            updateCheckboxStyle(checkbox);
         });
 
         function showStep(step) {
@@ -670,38 +667,38 @@
             return emailRegex.test(email);
         }
 
+        // 回傳第一個錯誤訊息；成功時回傳空字串，統一由按鈕顯示。
         function validateStep(step) {
             if (step === 1) {
-                return document.getElementById('name').value &&
-                       document.getElementById('role').value &&
-                       document.querySelector('input[name="staff"]:checked');
+                if (!document.getElementById('name').value.trim()) return '請填寫您的稱呼';
+                if (!document.getElementById('role').value) return '請選擇您的角色／職稱';
+                if (!document.querySelector('input[name="staff"]:checked')) return '請選擇今日服務的 cacaFly 人員';
             } else if (step === 2) {
-                return document.querySelector('input[name="aiUsage"]:checked') &&
-                       document.querySelector('input[name="topics"]:checked');
+                if (!document.querySelector('input[name="aiUsage"]:checked')) return '請選擇在工作中使用 AI 的狀況';
+                if (!document.querySelector('input[name="topics"]:checked')) return '請至少選擇一個感興趣的主題';
             } else if (step === 3) {
                 const needContact = document.querySelector('input[name="needContact"]:checked');
-                if (!needContact) return false;
+                if (!needContact) return '請選擇是否需要 cacaFly 進一步聯繫';
                 if (needContact.value === '是，請聯繫我') {
                     const email = document.getElementById('email').value;
-                    if (!validateEmail(email)) {
-                        alert('請輸入有效的公司電子郵件地址（例如：you@company.com）');
-                        return false;
-                    }
-                    return document.getElementById('company').value &&
-                           email &&
-                           document.getElementById('phone').value &&
-                           document.getElementById('privacy').checked;
+                    if (!email.trim()) return '請填寫公司電子郵件';
+                    if (!validateEmail(email)) return '請輸入有效的公司電子郵件地址（例如：you@company.com）';
+                    if (!document.getElementById('company').value.trim()) return '請填寫公司名稱';
+                    if (!document.getElementById('phone').value.trim()) return '請填寫電話號碼';
+                    if (!document.getElementById('privacy').checked) return '請勾選同意隱私政策';
                 }
-                return true;
+            } else {
+                return '請返回正確的表單步驟';
             }
-            return false;
+            return '';
         }
 
         nextBtn.addEventListener('click', async (e) => {
             e.preventDefault();
 
-            if (!validateStep(currentStep)) {
-                alert('請填寫所有必填欄位');
+            const validationError = validateStep(currentStep);
+            if (validationError) {
+                alert(validationError);
                 return;
             }
 
@@ -781,14 +778,6 @@
         // 初始化所有樣式
         ['staff', 'aiUsage', 'needContact'].forEach(name => {
             updateRadioStyles(name);
-        });
-
-        document.querySelectorAll('.checkbox-option input[type="checkbox"]').forEach(checkbox => {
-            const option = checkbox.closest('.checkbox-option');
-            if (checkbox.checked) {
-                option.style.background = '#fff8f0';
-                option.style.borderColor = '#FFA500';
-            }
         });
 
         showStep(1);
