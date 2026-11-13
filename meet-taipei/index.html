@@ -158,21 +158,36 @@
             user-select: none;
         }
 
-        .radio-option:hover,
-        .checkbox-option:hover {
+        .radio-option:hover {
             border-color: #FFA500;
             background: #fffaf5;
         }
 
-        .radio-option:active,
-        .checkbox-option:active {
+        .radio-option:active {
             border-color: #FFA500;
             background: #fff8f0;
         }
 
-        .radio-option input[type="radio"],
-        .checkbox-option input[type="checkbox"] {
+        .radio-option input[type="radio"] {
             display: none !important;
+        }
+
+        /* 保留原生表單控制項，讓手機點擊與鍵盤操作由瀏覽器處理。 */
+        .checkbox-option input[type="checkbox"]:not(#privacy) {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .checkbox-option:has(input:focus-visible) {
+            outline: 2px solid #FFA500;
+            outline-offset: 2px;
         }
 
         /* 隱私協議checkbox特殊處理 - 保留可見 */
@@ -194,7 +209,7 @@
         }
 
         .radio-option input[type="radio"]:checked + label,
-        .checkbox-option input[type="checkbox"]:checked + label {
+        .checkbox-option input[type="checkbox"]:checked + span {
             color: #FFA500;
             font-weight: 600;
         }
@@ -205,10 +220,11 @@
 
         .checkbox-option {
             position: relative;
+            margin: 0;
         }
 
         .radio-option label,
-        .checkbox-option label {
+        .checkbox-option span {
             margin: 0;
             cursor: pointer !important;
             font-weight: 500;
@@ -465,26 +481,26 @@
                 <div class="form-group">
                     <label class="required">主題選擇</label>
                     <div class="checkbox-group">
-                        <div class="checkbox-option">
-                            <input type="checkbox" id="topic1" name="topics" value="開始使用 Google Cloud，並管理帳務與費用">
-                            <label for="topic1">開始使用 Google Cloud，並管理帳務與費用</label>
-                        </div>
-                        <div class="checkbox-option">
-                            <input type="checkbox" id="topic2" name="topics" value="建置 AI Agent、企業知識庫或客製化 AI">
-                            <label for="topic2">建置 AI Agent、企業知識庫或客製化 AI</label>
-                        </div>
-                        <div class="checkbox-option">
-                            <input type="checkbox" id="topic3" name="topics" value="進行雲端健檢、AI 導入評估或教育訓練">
-                            <label for="topic3">進行雲端健檢、AI 導入評估或教育訓練</label>
-                        </div>
-                        <div class="checkbox-option">
-                            <input type="checkbox" id="topic4" name="topics" value="數據分析和商業智能">
-                            <label for="topic4">數據分析和商業智能</label>
-                        </div>
-                        <div class="checkbox-option">
-                            <input type="checkbox" id="topic5" name="topics" value="安全和合規">
-                            <label for="topic5">安全和合規</label>
-                        </div>
+                        <label class="checkbox-option" for="topic1">
+                                <input type="checkbox" id="topic1" name="topics" value="開始使用 Google Cloud，並管理帳務與費用">
+                                <span>開始使用 Google Cloud，並管理帳務與費用</span>
+                            </label>
+                        <label class="checkbox-option" for="topic2">
+                                <input type="checkbox" id="topic2" name="topics" value="建置 AI Agent、企業知識庫或客製化 AI">
+                                <span>建置 AI Agent、企業知識庫或客製化 AI</span>
+                            </label>
+                        <label class="checkbox-option" for="topic3">
+                                <input type="checkbox" id="topic3" name="topics" value="進行雲端健檢、AI 導入評估或教育訓練">
+                                <span>進行雲端健檢、AI 導入評估或教育訓練</span>
+                            </label>
+                        <label class="checkbox-option" for="topic4">
+                                <input type="checkbox" id="topic4" name="topics" value="數據分析和商業智能">
+                                <span>數據分析和商業智能</span>
+                            </label>
+                        <label class="checkbox-option" for="topic5">
+                                <input type="checkbox" id="topic5" name="topics" value="安全和合規">
+                                <span>安全和合規</span>
+                            </label>
                     </div>
                 </div>
 
@@ -533,10 +549,10 @@
                         </div>
 
                         <div class="form-group">
-                            <div class="checkbox-option">
+                            <label class="checkbox-option" for="privacy">
                                 <input type="checkbox" id="privacy" name="privacy">
-                                <label for="privacy">我同意 cacaFly 根據隱私政策收集和使用我的個人資訊</label>
-                            </div>
+                                <span>我同意 cacaFly 根據隱私政策收集和使用我的個人資訊</span>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -618,12 +634,6 @@
 
         document.querySelectorAll('.checkbox-option').forEach(option => {
             const checkbox = option.querySelector('input[type="checkbox"]');
-
-            option.addEventListener('click', (event) => {
-                // label 與 input 保留原生行為；只有容器空白處轉交點擊。
-                if (event.target.closest('input, label')) return;
-                checkbox.click();
-            });
 
             checkbox.addEventListener('change', () => updateCheckboxStyle(checkbox));
             updateCheckboxStyle(checkbox);
