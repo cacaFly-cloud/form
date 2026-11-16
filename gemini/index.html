@@ -414,6 +414,17 @@
         .step-hidden {
             display: none;
         }
+        .gift-page { text-align: center; padding: 16px 0; }
+        .gift-check { width: 72px; height: 72px; display: grid; place-items: center; margin: 0 auto 24px; border-radius: 50%; background: #F6891F; color: #181614; font-size: 36px; font-weight: 800; }
+        .gift-page h1 { color: #F6891F; font-size: 32px; margin-bottom: 16px; }
+        .gift-page p { font-size: 17px; line-height: 1.7; margin: 16px 0; }
+        .gift-page .gift-muted { color: #BFB7AE; font-size: 15px; }
+        .gift-warning { text-align: left; border: 1px solid #F6891F; border-radius: 8px; padding: 20px; margin: 24px 0; }
+        .gift-warning strong { color: #F6891F; font-size: 20px; }
+        .gift-warning p { margin-bottom: 0; }
+        .gift-page button { width: 100%; min-height: 58px; font-size: 17px; }
+        #giftStatus { margin: 24px 0; font-size: 22px; font-weight: 700; line-height: 1.6; }
+        [hidden] { display: none !important; }
     </style>
 </head>
 <body>
@@ -757,6 +768,11 @@
         nextBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             if (isSubmitting) return;
+            const previousVisit = readVisit();
+            if (previousVisit && Date.now() < previousVisit.submittedAt + COOLDOWN_MS) {
+                showSuccessPage();
+                return;
+            }
 
             const validationError = validateStep(currentStep);
             if (validationError) {
@@ -767,7 +783,7 @@
             if (currentStep < 3) {
                 showStep(currentStep + 1);
             } else {
-                if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL') {
+                if (!/^https:\/\//.test(APPS_SCRIPT_URL)) {
                     alert('尚未設定表單接收網址，請聯繫現場人員。');
                     return;
                 }
@@ -797,7 +813,8 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        showSuccessPage(result.name);
+                        saveVisit({ submittedAt: Date.now(), redeemedAt: null });
+                        showSuccessPage();
                     } else {
                         alert('提交失敗: ' + result.message);
                         setSubmitting(false);
@@ -817,28 +834,86 @@
             }
         });
 
-        function showSuccessPage(name) {
-            var displayName = String(name || '親愛的訪客').replace(/[&<>"']/g, character => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-            }[character]));
-            document.querySelector('.container').innerHTML =
-                '<div style="text-align: center; padding: 32px 20px;">' +
-                '<div style="width: 72px; height: 72px; margin: 0 auto 24px; background: #F6891F; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #181614; font-weight: bold;">✓</div>' +
-                '<h1 style="color: #F6891F; font-size: 36px; margin-bottom: 16px; font-weight: 800; line-height: 1.3;">提交成功！</h1>' +
-                '<p style="color: #F5F1EB; font-size: 16px; margin-bottom: 28px; font-weight: 600; line-height: 1.6;">' + displayName + '，感謝你的參與</p>' +
-                '<div style="color: #BFB7AE; margin-bottom: 28px; font-size: 16px; line-height: 1.8;">' +
-                '<p style="margin: 0 0 12px 0;">我們已收到你的信息，我們的團隊會盡快審查。</p>' +
-                '<p style="margin: 0;">如果你選擇了聯繫，我們會在 3-5 個工作日內與你聯繫。</p>' +
-                '</div>' +
-                '<div style="background: #30251B; padding: 20px; border-radius: 8px; border-left: 4px solid #F6891F; text-align: left;">' +
-                '<h3 style="color: #F6891F; font-size: 17px; margin-bottom: 12px; font-weight: 800; margin-top: 0; text-align: center;">接下來會發生什麼？</h3>' +
-                '<p style="color: #BFB7AE; font-size: 15px; margin: 0; line-height: 1.8;">' +
-                '• 請出示畫面領取小禮物<br>' +
-                '• 如有需要，我們會發送郵件或電話聯繫<br>' +
-                '• 準備好解答你關於 AI 和雲端服務的問題' +
-                '</p>' +
-                '</div>' +
-                '</div>';
+        // 僅保存本分頁的時間與兌換狀態，不保存姓名或聯絡資料。
+        const VISIT_KEY = 'cacafly-gemini-gift-v1:' + location.pathname;
+        const COOLDOWN_MS = 5 * 60 * 1000;
+        let memoryVisit = null;
+        let visitTimer = null;
+
+        function readVisit() {
+            try {
+                const value = JSON.parse(sessionStorage.getItem(VISIT_KEY));
+                if (value && Number.isFinite(value.submittedAt) &&
+                    (value.redeemedAt === null || Number.isFinite(value.redeemedAt))) {
+                    memoryVisit = value;
+                }
+            } catch (error) { /* 儲存不可用時，當頁仍保留狀態。 */ }
+            return memoryVisit;
+        }
+
+        function saveVisit(value) {
+            memoryVisit = value;
+            try { sessionStorage.setItem(VISIT_KEY, JSON.stringify(value)); }
+            catch (error) { /* 不把已提交成功誤報為提交失敗。 */ }
+        }
+
+        function clearVisit() {
+            memoryVisit = null;
+            try { sessionStorage.removeItem(VISIT_KEY); } catch (error) {}
+        }
+
+        function showSuccessPage() {
+            const visit = readVisit();
+            if (!visit) return;
+            clearInterval(visitTimer);
+            document.querySelector('.container').innerHTML = `
+                <section class="gift-page">
+                    <div class="gift-check" aria-hidden="true">✓</div>
+                    <h1>填寫完成！</h1>
+                    <p>感謝你的參與，請出示此畫面領取小禮物。</p>
+                    <p class="gift-muted">如果你選擇了聯繫，我們會在 3–5 個工作日內與你聯繫。</p>
+                    <div id="giftStatus" role="status" aria-live="polite"></div>
+                    <div id="giftWarning" class="gift-warning">
+                        <strong>⚠ 請勿自行點擊</strong>
+                        <p>請將此畫面出示給工作人員，由工作人員確認後操作。自行點擊可能影響禮物領取。</p>
+                    </div>
+                    <button type="button" id="redeemBtn" class="btn-submit">工作人員專用｜確認兌換</button>
+                    <p id="cooldownText" class="gift-muted"></p>
+                    <button type="button" id="restartBtn" class="btn-back" hidden>重新填寫</button>
+                </section>`;
+            const redeemBtn = document.getElementById('redeemBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            function refresh() {
+                const current = readVisit();
+                const redeemed = current.redeemedAt !== null;
+                redeemBtn.disabled = redeemed;
+                redeemBtn.textContent = redeemed ? '✓ 已兌換' : '工作人員專用｜確認兌換';
+                document.getElementById('giftWarning').hidden = redeemed;
+                document.getElementById('giftStatus').textContent = redeemed
+                    ? '✓ 已兌換 · ' + new Date(current.redeemedAt).toLocaleString('zh-TW', { hour12: false })
+                    : '待兌換';
+                const seconds = Math.max(0, Math.ceil((current.submittedAt + COOLDOWN_MS - Date.now()) / 1000));
+                document.getElementById('cooldownText').textContent = seconds > 0
+                    ? '已完成填寫，' + Math.floor(seconds / 60) + ' 分 ' + String(seconds % 60).padStart(2, '0') + ' 秒後可重新填寫。'
+                    : '本次填寫的 5 分鐘間隔已結束。';
+                restartBtn.hidden = seconds > 0;
+                if (seconds === 0) clearInterval(visitTimer);
+            }
+            redeemBtn.addEventListener('click', () => {
+                const current = readVisit();
+                if (current.redeemedAt !== null) return;
+                if (!confirm('工作人員確認：已發放禮物嗎？\n確認後將標記為「已兌換」，本次無法再次使用。')) return;
+                saveVisit({ submittedAt: current.submittedAt, redeemedAt: Date.now() });
+                refresh();
+            });
+            restartBtn.addEventListener('click', () => {
+                if (Date.now() < readVisit().submittedAt + COOLDOWN_MS) return;
+                clearVisit();
+                location.reload();
+            });
+            visitTimer = setInterval(refresh, 1000);
+            refresh();
+            window.scrollTo(0, 0);
         }
 
         // 初始化所有樣式
@@ -846,7 +921,13 @@
             updateRadioStyles(name);
         });
 
-        showStep(1);
+        const savedVisit = readVisit();
+        if (savedVisit && Date.now() < savedVisit.submittedAt + COOLDOWN_MS) {
+            showSuccessPage();
+        } else {
+            clearVisit();
+            showStep(1);
+        }
     </script>
 </body>
 </html>
