@@ -514,6 +514,17 @@
 
                 <div class="section-divider"></div>
 
+<div id="cloudUsageSection" class="form-group"><label class="required">目前使用哪些 Google 服務？</label><div class="radio-group"><div class="radio-option"><input type="radio" id="cloudUsage0" name="cloudUsage" value="僅使用 Google Cloud（GCP）"><label for="cloudUsage0">僅使用 Google Cloud（GCP）</label></div>
+<div class="radio-option"><input type="radio" id="cloudUsage1" name="cloudUsage" value="僅使用 Google Workspace（GWS）"><label for="cloudUsage1">僅使用 Google Workspace（GWS）</label></div>
+<div class="radio-option"><input type="radio" id="cloudUsage2" name="cloudUsage" value="兩者都有使用"><label for="cloudUsage2">兩者都有使用</label></div>
+<div class="radio-option"><input type="radio" id="cloudUsage3" name="cloudUsage" value="兩者都尚未使用"><label for="cloudUsage3">兩者都尚未使用</label></div>
+</div></div>
+<div id="gcpPaymentMethodSection" class="form-group hidden"><label class="required">GCP 的付款方式？</label><div class="radio-group"><div class="radio-option"><input type="radio" id="gcpPaymentMethod0" name="gcpPaymentMethod" value="刷信用卡"><label for="gcpPaymentMethod0">刷信用卡</label></div>
+<div class="radio-option"><input type="radio" id="gcpPaymentMethod1" name="gcpPaymentMethod" value="代理商"><label for="gcpPaymentMethod1">代理商</label></div>
+<div class="radio-option"><input type="radio" id="gcpPaymentMethod2" name="gcpPaymentMethod" value="不清楚"><label for="gcpPaymentMethod2">不清楚</label></div></div></div>
+<div id="gwsPaymentMethodSection" class="form-group hidden"><label class="required">GWS 的付款方式？</label><div class="radio-group"><div class="radio-option"><input type="radio" id="gwsPaymentMethod0" name="gwsPaymentMethod" value="刷信用卡"><label for="gwsPaymentMethod0">刷信用卡</label></div>
+<div class="radio-option"><input type="radio" id="gwsPaymentMethod1" name="gwsPaymentMethod" value="代理商"><label for="gwsPaymentMethod1">代理商</label></div>
+<div class="radio-option"><input type="radio" id="gwsPaymentMethod2" name="gwsPaymentMethod" value="不清楚"><label for="gwsPaymentMethod2">不清楚</label></div></div></div>
                 <div class="section-title">感興趣的主題</div>
                 <div class="section-desc">✓ 可選擇多個 - 請勾選所有感興趣的領域</div>
 
@@ -635,6 +646,25 @@
         const stepTitle = document.getElementById('stepTitle');
         const loading = document.getElementById('loading');
 
+        function usesService(usage, service) {
+            return usage === '兩者都有使用' || usage === (service === 'gcp'
+                ? '僅使用 Google Cloud（GCP）' : '僅使用 Google Workspace（GWS）');
+        }
+
+        function togglePaymentSection() {
+            const usage = document.querySelector('input[name="cloudUsage"]:checked')?.value;
+            ['gcp', 'gws'].forEach(service => {
+                const active = usesService(usage, service);
+                const name = service + 'PaymentMethod';
+                document.getElementById(name + 'Section').classList.toggle('hidden', !active);
+                document.querySelectorAll('input[name="' + name + '"]').forEach(input => {
+                    input.disabled = !active;
+                    if (!active) input.checked = false;
+                });
+                updateRadioStyles(name);
+            });
+        }
+
         function toggleContactSection() {
             const isYes = document.getElementById('contact_yes').checked;
             if (isYes) {
@@ -667,10 +697,11 @@
         }
 
         // 所有 radio 按鈕組監聽
-        ['staff', 'aiUsage', 'needContact'].forEach(name => {
+        ['staff', 'aiUsage', 'needContact', 'cloudUsage', 'gcpPaymentMethod', 'gwsPaymentMethod'].forEach(name => {
             document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
                 radio.addEventListener('change', () => {
                     updateRadioStyles(name);
+                    if (name === 'cloudUsage') togglePaymentSection();
                     if (name === 'needContact') {
                         toggleContactSection();
                     }
@@ -736,6 +767,10 @@
                 if (!document.getElementById('role').value) return '請選擇您的角色／職稱';
                 if (!document.querySelector('input[name="staff"]:checked')) return '請選擇今日服務的 cacaFly 人員';
             } else if (step === 2) {
+                const cloudUsage = document.querySelector('input[name="cloudUsage"]:checked');
+                if (!cloudUsage) return '請選擇目前使用哪些 Google 服務';
+                if (usesService(cloudUsage.value, 'gcp') && !document.querySelector('input[name="gcpPaymentMethod"]:checked')) return '請選擇 GCP 的付款方式';
+                if (usesService(cloudUsage.value, 'gws') && !document.querySelector('input[name="gwsPaymentMethod"]:checked')) return '請選擇 GWS 的付款方式';
                 if (!document.querySelector('input[name="aiUsage"]:checked')) return '請選擇在工作中使用 AI 的狀況';
                 if (!document.querySelector('input[name="topics"]:checked')) return '請至少選擇一個感興趣的主題';
             } else if (step === 3) {
@@ -795,6 +830,9 @@
                     aiUsage: formData.get('aiUsage') || '',
                     topics: Array.from(formData.getAll('topics')).join(', '),
                     challenges: formData.get('challenges') || '',
+                    cloudUsage: formData.get('cloudUsage') || '',
+                    gcpPaymentMethod: usesService(formData.get('cloudUsage'), 'gcp') ? (formData.get('gcpPaymentMethod') || '') : '',
+                    gwsPaymentMethod: usesService(formData.get('cloudUsage'), 'gws') ? (formData.get('gwsPaymentMethod') || '') : '',
                     needContact: formData.get('needContact') || '',
                     company: formData.get('company') || '',
                     email: formData.get('email') || '',
@@ -917,10 +955,11 @@
         }
 
         // 初始化所有樣式
-        ['staff', 'aiUsage', 'needContact'].forEach(name => {
+        ['staff', 'aiUsage', 'needContact', 'cloudUsage', 'gcpPaymentMethod', 'gwsPaymentMethod'].forEach(name => {
             updateRadioStyles(name);
         });
 
+        togglePaymentSection();
         const savedVisit = readVisit();
         if (savedVisit && Date.now() < savedVisit.submittedAt + COOLDOWN_MS) {
             showSuccessPage();
