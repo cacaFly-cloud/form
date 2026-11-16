@@ -392,6 +392,17 @@
         .step-hidden {
             display: none;
         }
+        .gift-page { text-align: center; padding: 16px 0; }
+        .gift-check { width: 72px; height: 72px; display: grid; place-items: center; margin: 0 auto 24px; border-radius: 50%; background: #FFA500; color: white; font-size: 36px; font-weight: 800; }
+        .gift-page h1 { color: #FFA500; font-size: 32px; margin-bottom: 16px; }
+        .gift-page p { font-size: 17px; line-height: 1.7; margin: 16px 0; }
+        .gift-page .gift-muted { color: #666; font-size: 15px; }
+        .gift-warning { text-align: left; border: 1px solid #FFA500; border-radius: 8px; padding: 20px; margin: 24px 0; }
+        .gift-warning strong { color: #FFA500; font-size: 20px; }
+        .gift-warning p { margin-bottom: 0; }
+        .gift-page button { width: 100%; min-height: 58px; font-size: 17px; }
+        #giftStatus { margin: 24px 0; font-size: 22px; font-weight: 700; line-height: 1.6; }
+        [hidden] { display: none !important; }
     </style>
 </head>
 <body>
@@ -493,6 +504,17 @@
 
                 <div class="section-divider"></div>
 
+<div id="cloudUsageSection" class="form-group"><label class="required">目前使用哪些 Google 服務？</label><div class="radio-group"><div class="radio-option"><input type="radio" id="cloudUsage0" name="cloudUsage" value="僅使用 Google Cloud（GCP）"><label for="cloudUsage0">僅使用 Google Cloud（GCP）</label></div>
+<div class="radio-option"><input type="radio" id="cloudUsage1" name="cloudUsage" value="僅使用 Google Workspace（GWS）"><label for="cloudUsage1">僅使用 Google Workspace（GWS）</label></div>
+<div class="radio-option"><input type="radio" id="cloudUsage2" name="cloudUsage" value="兩者都有使用"><label for="cloudUsage2">兩者都有使用</label></div>
+<div class="radio-option"><input type="radio" id="cloudUsage3" name="cloudUsage" value="兩者都尚未使用"><label for="cloudUsage3">兩者都尚未使用</label></div>
+</div></div>
+<div id="gcpPaymentMethodSection" class="form-group hidden"><label class="required">GCP 的付款方式？</label><div class="radio-group"><div class="radio-option"><input type="radio" id="gcpPaymentMethod0" name="gcpPaymentMethod" value="刷信用卡"><label for="gcpPaymentMethod0">刷信用卡</label></div>
+<div class="radio-option"><input type="radio" id="gcpPaymentMethod1" name="gcpPaymentMethod" value="代理商"><label for="gcpPaymentMethod1">代理商</label></div>
+<div class="radio-option"><input type="radio" id="gcpPaymentMethod2" name="gcpPaymentMethod" value="不清楚"><label for="gcpPaymentMethod2">不清楚</label></div></div></div>
+<div id="gwsPaymentMethodSection" class="form-group hidden"><label class="required">GWS 的付款方式？</label><div class="radio-group"><div class="radio-option"><input type="radio" id="gwsPaymentMethod0" name="gwsPaymentMethod" value="刷信用卡"><label for="gwsPaymentMethod0">刷信用卡</label></div>
+<div class="radio-option"><input type="radio" id="gwsPaymentMethod1" name="gwsPaymentMethod" value="代理商"><label for="gwsPaymentMethod1">代理商</label></div>
+<div class="radio-option"><input type="radio" id="gwsPaymentMethod2" name="gwsPaymentMethod" value="不清楚"><label for="gwsPaymentMethod2">不清楚</label></div></div></div>
                 <div class="section-title">感興趣的主題</div>
                 <div class="section-desc">✓ 可選擇多個 - 請勾選所有感興趣的領域</div>
 
@@ -518,6 +540,10 @@
                         <label class="checkbox-option" for="topic5">
                                 <input type="checkbox" id="topic5" name="topics" value="安全和合規">
                                 <span>安全和合規</span>
+                            </label>
+                        <label class="checkbox-option" for="topic6">
+                                <input type="checkbox" id="topic6" name="topics" value="Google Worksapce 企業方案">
+                                <span>Google Worksapce 企業方案</span>
                             </label>
                     </div>
                 </div>
@@ -590,7 +616,7 @@
 
     <script>
         // 改這裡！替換成你的 Google Apps Script URL
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDw5XSxxDlAqHUf5FZh82qJDwXZrz6k26GsFWSbsX__ZVmo26af6SlprB_XWsfr-Z1VA/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzDw5XSxxDlAqHUf5FZh82qJDwXZrz6k26GsFWSbsX__ZVmo26af6SlprB_XWsfr-Z1VA/exe';
 
         let currentStep = 1;
         let isSubmitting = false;
@@ -601,6 +627,25 @@
         const progressFill = document.getElementById('progressFill');
         const stepTitle = document.getElementById('stepTitle');
         const loading = document.getElementById('loading');
+
+        function usesService(usage, service) {
+            return usage === '兩者都有使用' || usage === (service === 'gcp'
+                ? '僅使用 Google Cloud（GCP）' : '僅使用 Google Workspace（GWS）');
+        }
+
+        function togglePaymentSection() {
+            const usage = document.querySelector('input[name="cloudUsage"]:checked')?.value;
+            ['gcp', 'gws'].forEach(service => {
+                const active = usesService(usage, service);
+                const name = service + 'PaymentMethod';
+                document.getElementById(name + 'Section').classList.toggle('hidden', !active);
+                document.querySelectorAll('input[name="' + name + '"]').forEach(input => {
+                    input.disabled = !active;
+                    if (!active) input.checked = false;
+                });
+                updateRadioStyles(name);
+            });
+        }
 
         function toggleContactSection() {
             const isYes = document.getElementById('contact_yes').checked;
@@ -634,10 +679,11 @@
         }
 
         // 所有 radio 按鈕組監聽
-        ['staff', 'aiUsage', 'needContact'].forEach(name => {
+        ['staff', 'aiUsage', 'needContact', 'cloudUsage', 'gcpPaymentMethod', 'gwsPaymentMethod'].forEach(name => {
             document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
                 radio.addEventListener('change', () => {
                     updateRadioStyles(name);
+                    if (name === 'cloudUsage') togglePaymentSection();
                     if (name === 'needContact') {
                         toggleContactSection();
                     }
@@ -703,6 +749,11 @@
                 if (!document.getElementById('role').value) return '請選擇您的角色／職稱';
                 if (!document.querySelector('input[name="staff"]:checked')) return '請選擇今日服務的 cacaFly 人員';
             } else if (step === 2) {
+                const cloudUsage = document.querySelector('input[name="cloudUsage"]:checked');
+                if (!cloudUsage) return '請選擇目前使用哪些 Google 服務';
+                if (usesService(cloudUsage.value, 'gcp') && !document.querySelector('input[name="gcpPaymentMethod"]:checked')) return '請選擇 GCP 的付款方式';
+                if (usesService(cloudUsage.value, 'gws') && !document.querySelector('input[name="gwsPaymentMethod"]:checked')) return '請選擇 GWS 的付款方式';
+
                 if (!document.querySelector('input[name="aiUsage"]:checked')) return '請選擇在工作中使用 AI 的狀況';
                 if (!document.querySelector('input[name="topics"]:checked')) return '請至少選擇一個感興趣的主題';
             } else if (step === 3) {
@@ -735,6 +786,11 @@
         nextBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             if (isSubmitting) return;
+            const previousVisit = readVisit();
+            if (previousVisit && Date.now() < previousVisit.submittedAt + COOLDOWN_MS) {
+                showSuccessPage();
+                return;
+            }
 
             const validationError = validateStep(currentStep);
             if (validationError) {
@@ -745,6 +801,10 @@
             if (currentStep < 3) {
                 showStep(currentStep + 1);
             } else {
+                if (!/^https:\/\//.test(APPS_SCRIPT_URL)) {
+                    alert('尚未設定表單接收網址，請聯繫現場人員。');
+                    return;
+                }
                 const formData = new FormData(form);
                 const submitData = {
                     name: formData.get('name') || '',
@@ -753,6 +813,9 @@
                     aiUsage: formData.get('aiUsage') || '',
                     topics: Array.from(formData.getAll('topics')).join(', '),
                     challenges: formData.get('challenges') || '',
+                    cloudUsage: formData.get('cloudUsage') || '',
+                    gcpPaymentMethod: usesService(formData.get('cloudUsage'), 'gcp') ? (formData.get('gcpPaymentMethod') || '') : '',
+                    gwsPaymentMethod: usesService(formData.get('cloudUsage'), 'gws') ? (formData.get('gwsPaymentMethod') || '') : '',
                     needContact: formData.get('needContact') || '',
                     company: formData.get('company') || '',
                     email: formData.get('email') || '',
@@ -771,7 +834,8 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        showSuccessPage(result.name);
+                        saveVisit({ submittedAt: Date.now(), redeemedAt: null });
+                        showSuccessPage();
                     } else {
                         alert('提交失敗: ' + result.message);
                         setSubmitting(false);
@@ -791,34 +855,102 @@
             }
         });
 
-        function showSuccessPage(name) {
-            var displayName = name || '親愛的訪客';
-            document.querySelector('.container').innerHTML =
-                '<div style="text-align: center; padding: 32px 20px;">' +
-                '<div style="width: 72px; height: 72px; margin: 0 auto 24px; background: #FFA500; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; color: white; font-weight: bold;">✓</div>' +
-                '<h1 style="color: #FFA500; font-size: 36px; margin-bottom: 16px; font-weight: 800; line-height: 1.3;">提交成功！</h1>' +
-                '<p style="color: #333; font-size: 16px; margin-bottom: 28px; font-weight: 600; line-height: 1.6;">' + displayName + '，感謝你的參與</p>' +
-                '<div style="color: #666; margin-bottom: 28px; font-size: 14px; line-height: 1.8;">' +
-                '<p style="margin: 0 0 12px 0;">我們已收到你的信息，我們的團隊會盡快審查。</p>' +
-                '<p style="margin: 0;">如果你選擇了聯繫，我們會在 3-5 個工作日內與你聯繫。</p>' +
-                '</div>' +
-                '<div style="background: #fff8f0; padding: 20px; border-radius: 8px; border-left: 4px solid #FFA500; text-align: left;">' +
-                '<h3 style="color: #FFA500; font-size: 15px; margin-bottom: 12px; font-weight: 800; margin-top: 0; text-align: center;">接下來會發生什麼？</h3>' +
-                '<p style="color: #666; font-size: 13px; margin: 0; line-height: 1.8;">' +
-                '• 請出示畫面領取小禮物<br>' +
-                '• 如有需要，我們會發送郵件或電話聯繫<br>' +
-                '• 準備好解答你關於 AI 和雲端服務的問題' +
-                '</p>' +
-                '</div>' +
-                '</div>';
+        // 僅保存本分頁的時間與兌換狀態，不保存姓名或聯絡資料。
+        const VISIT_KEY = 'cacafly-meet-taipei-gift-v1:' + location.pathname;
+        const COOLDOWN_MS = 5 * 60 * 1000;
+        let memoryVisit = null;
+        let visitTimer = null;
+
+        function readVisit() {
+            try {
+                const value = JSON.parse(sessionStorage.getItem(VISIT_KEY));
+                if (value && Number.isFinite(value.submittedAt) &&
+                    (value.redeemedAt === null || Number.isFinite(value.redeemedAt))) {
+                    memoryVisit = value;
+                }
+            } catch (error) { /* 儲存不可用時，當頁仍保留狀態。 */ }
+            return memoryVisit;
+        }
+
+        function saveVisit(value) {
+            memoryVisit = value;
+            try { sessionStorage.setItem(VISIT_KEY, JSON.stringify(value)); }
+            catch (error) { /* 不把已提交成功誤報為提交失敗。 */ }
+        }
+
+        function clearVisit() {
+            memoryVisit = null;
+            try { sessionStorage.removeItem(VISIT_KEY); } catch (error) {}
+        }
+
+        function showSuccessPage() {
+            const visit = readVisit();
+            if (!visit) return;
+            clearInterval(visitTimer);
+            document.querySelector('.container').innerHTML = `
+                <section class="gift-page">
+                    <div class="gift-check" aria-hidden="true">✓</div>
+                    <h1>填寫完成！</h1>
+                    <p>感謝你的參與，請出示此畫面領取小禮物。</p>
+                    <p class="gift-muted">如果你選擇了聯繫，我們會在 3–5 個工作日內與你聯繫。</p>
+                    <div id="giftStatus" role="status" aria-live="polite"></div>
+                    <div id="giftWarning" class="gift-warning">
+                        <strong>⚠ 請勿自行點擊</strong>
+                        <p>請將此畫面出示給工作人員，由工作人員確認後操作。自行點擊可能影響禮物領取。</p>
+                    </div>
+                    <button type="button" id="redeemBtn" class="btn-submit">工作人員專用｜確認兌換</button>
+                    <p id="cooldownText" class="gift-muted"></p>
+                    <button type="button" id="restartBtn" class="btn-back" hidden>重新填寫</button>
+                </section>`;
+            const redeemBtn = document.getElementById('redeemBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            function refresh() {
+                const current = readVisit();
+                const redeemed = current.redeemedAt !== null;
+                redeemBtn.disabled = redeemed;
+                redeemBtn.textContent = redeemed ? '✓ 已兌換' : '工作人員專用｜確認兌換';
+                document.getElementById('giftWarning').hidden = redeemed;
+                document.getElementById('giftStatus').textContent = redeemed
+                    ? '✓ 已兌換 · ' + new Date(current.redeemedAt).toLocaleString('zh-TW', { hour12: false })
+                    : '待兌換';
+                const seconds = Math.max(0, Math.ceil((current.submittedAt + COOLDOWN_MS - Date.now()) / 1000));
+                document.getElementById('cooldownText').textContent = seconds > 0
+                    ? '已完成填寫，' + Math.floor(seconds / 60) + ' 分 ' + String(seconds % 60).padStart(2, '0') + ' 秒後可重新填寫。'
+                    : '本次填寫的 5 分鐘間隔已結束。';
+                restartBtn.hidden = seconds > 0;
+                if (seconds === 0) clearInterval(visitTimer);
+            }
+            redeemBtn.addEventListener('click', () => {
+                const current = readVisit();
+                if (current.redeemedAt !== null) return;
+                if (!confirm('工作人員確認：已發放禮物嗎？\n確認後將標記為「已兌換」，本次無法再次使用。')) return;
+                saveVisit({ submittedAt: current.submittedAt, redeemedAt: Date.now() });
+                refresh();
+            });
+            restartBtn.addEventListener('click', () => {
+                if (Date.now() < readVisit().submittedAt + COOLDOWN_MS) return;
+                clearVisit();
+                location.reload();
+            });
+            visitTimer = setInterval(refresh, 1000);
+            refresh();
+            window.scrollTo(0, 0);
         }
 
         // 初始化所有樣式
-        ['staff', 'aiUsage', 'needContact'].forEach(name => {
+        ['staff', 'aiUsage', 'needContact', 'cloudUsage', 'gcpPaymentMethod', 'gwsPaymentMethod'].forEach(name => {
             updateRadioStyles(name);
         });
 
-        showStep(1);
+        togglePaymentSection();
+        const savedVisit = readVisit();
+        if (savedVisit && Date.now() < savedVisit.submittedAt + COOLDOWN_MS) {
+            showSuccessPage();
+        } else {
+            clearVisit();
+            showStep(1);
+        }
+
     </script>
 </body>
 </html>
